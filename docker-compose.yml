@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: kanban
+      POSTGRES_USER: kanban
+      POSTGRES_PASSWORD: kanban_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kanban"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  api:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://kanban:kanban_password@db:5432/kanban
+      PORT: 3001
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./apps/server:/app
+      - /app/node_modules
+    command: npm run start
+
+  # Frontend
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:

@@ -1,0 +1,33 @@
+{
+  "name": "real-time-kanban",
+  "version": "1.0.0",
+  "description": "Real-time Kanban board with React, Zustand, and WebSockets",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "build": "pnpm run --filter ./packages/shared build && pnpm run --filter ./apps/web build",
+    "build:functions": "pnpm run --filter ./packages/shared build",
+    "test": "pnpm run --recursive test",
+    "lint": "pnpm run --recursive lint",
+    "type-check": "pnpm run --recursive type-check",
+    "clean": "pnpm run --recursive clean",
+    "deploy": "pnpm run build && netlify deploy --prod",
+    "preview": "pnpm run build && netlify deploy"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^5.0.1",
+    "@types/node": "^20.10.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

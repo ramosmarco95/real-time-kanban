@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assignedCards Card[]
+
+  @@map("users")
+}
+
+model Board {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  columns Column[]
+
+  @@map("boards")
+}
+
+model Column {
+  id        String   @id @default(cuid())
+  boardId   String
+  title     String
+  order     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards Card[]
+
+  @@unique([boardId, order])
+  @@map("columns")
+}
+
+model Card {
+  id          String    @id @default(cuid())
+  columnId    String
+  title       String
+  description String?
+  order       Float
+  assignedTo  String?
+  labels      String? // JSON array stored as string
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  column       Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignedUser User?  @relation(fields: [assignedTo], references: [id])
+
+  @@unique([columnId, order])
+  @@map("cards")
+}
