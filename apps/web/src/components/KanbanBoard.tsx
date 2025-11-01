@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DndContext, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { useKanbanStore, selectCurrentBoard, selectCurrentBoardColumns } from '../store/kanban';
@@ -109,7 +109,6 @@ export function KanbanBoard() {
       if (targetColumn) {
         const overCardIndex = targetColumn.cards.findIndex(c => c.id === overCard.id);
         const beforeCard = targetColumn.cards[overCardIndex - 1];
-        const afterCard = targetColumn.cards[overCardIndex + 1];
         
         targetOrder = calculateOrder(
           beforeCard?.order,

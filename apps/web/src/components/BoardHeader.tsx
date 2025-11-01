@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Board } from '@real-time-kanban/shared';
 import { Users, Wifi, WifiOff } from 'lucide-react';
 import { useKanbanStore, selectOnlineUsers } from '../store/kanban';
