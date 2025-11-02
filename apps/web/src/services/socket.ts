@@ -8,7 +8,7 @@ class SocketService {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
 
-  connect(url: string = 'http://localhost:3001') {
+  connect(url: string = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3001') {
     if (this.socket?.connected) {
       return;
     }
