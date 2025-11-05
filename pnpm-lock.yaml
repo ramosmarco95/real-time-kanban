@@ -21,9 +21,6 @@ importers:
         specifier: ^9.0.2
         version: 9.0.2
     devDependencies:
-      '@netlify/functions':
-        specifier: ^5.0.1
-        version: 5.0.1
       '@types/node':
         specifier: ^20.10.0
         version: 20.19.21
@@ -1347,18 +1344,6 @@ packages:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
-    dev: true
-
-  /@netlify/functions@5.0.1:
-    resolution: {integrity: sha512-olCwsnp0GDpjSYPfWrtUIvOsZcrRta6lxwZWfl3XxucXOw5AcGDKSqKGRElzyyZoRA8OXVh5B5NHj5Jd4PRx+A==}
-    engines: {node: '>=18.0.0'}
-    dependencies:
-      '@netlify/types': 2.1.0
-    dev: true
-
-  /@netlify/types@2.1.0:
-    resolution: {integrity: sha512-ktUb5d58pt1lQGXO5E9S0F1ljM0g+CoQuGTVII0IxBc0apmPq5RI0o3OWLY7U3ZERRiYTg5UfjiMihBEzuZsuw==}
-    engines: {node: ^18.14.0 || >=20}
     dev: true
 
   /@nodelib/fs.scandir@2.1.5:
