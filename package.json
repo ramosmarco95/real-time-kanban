@@ -10,17 +10,14 @@
   "scripts": {
     "dev": "pnpm run --parallel dev",
     "build": "pnpm run --filter ./packages/shared build && pnpm run --filter ./apps/web build",
-    "build:functions": "pnpm run --filter ./packages/shared build",
+    "build:web": "pnpm run --filter ./packages/shared build && pnpm run --filter ./apps/web build",
     "test": "pnpm run --recursive test",
     "lint": "pnpm run --recursive lint",
     "type-check": "pnpm run --recursive type-check",
     "clean": "pnpm run --recursive clean",
-    "deploy": "pnpm run build && netlify deploy --prod",
-    "preview": "pnpm run build && netlify deploy"
+    "preview": "pnpm run build && cd apps/web && pnpm preview"
   },
   "devDependencies": {
-    "@netlify/functions": "^5.0.1",
-    "@supabase/supabase-js": "^2.76.1",
     "@types/node": "^20.10.0",
     "eslint": "^8.56.0",
     "prettier": "^3.1.0",
@@ -30,5 +27,11 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0"
+  "packageManager": "pnpm@8.15.0",
+  "dependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.2"
+  }
 }

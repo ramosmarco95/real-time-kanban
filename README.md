@@ -181,43 +181,52 @@ pnpm db:reset
 
 ## 🚀 Deployment
 
-### Production Deployment (Supabase + Netlify)
+### Production Deployment Options
 
-This app is configured for easy deployment using:
-- **Supabase** for PostgreSQL database and real-time features
-- **Netlify** for static hosting and serverless functions
+This app can be deployed using various strategies:
+
+#### Option 1: GitHub Pages (Frontend Only) + Separate Backend
+- **GitHub Pages** for static frontend hosting
+- **Railway/Render/Heroku** for Node.js backend deployment
+- **Supabase/PlanetScale** for PostgreSQL database
+
+#### Option 2: Full-Stack Platform
+- **Vercel/Railway/Render** for full-stack deployment
+- Built-in PostgreSQL support available
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
-### Quick Deployment Steps
+### GitHub Pages Deployment (Recommended for Frontend)
 
-1. **Set up Supabase**:
-   - Create a new project at [supabase.com](https://supabase.com)
-   - Run the SQL schema from `DEPLOYMENT.md`
-   - Get your connection strings and API keys
+1. **Set up your backend**:
+   - Deploy backend to Railway, Render, or Heroku
+   - Use Supabase or similar for PostgreSQL database
+   - Get your API endpoint URL
 
-2. **Deploy to Netlify**:
-   - Connect your GitHub repo to Netlify
-   - Set environment variables (Supabase URL and keys)
-   - Deploy automatically
+2. **Configure for GitHub Pages**:
+   - Update `VITE_API_BASE_URL` in your environment
+   - Ensure proper CORS configuration
+   - Push to your GitHub repository
 
-3. **Migrate your local setup**:
-   ```bash
-   # Copy environment files
-   cp apps/server/.env.example apps/server/.env
-   cp apps/web/.env.example apps/web/.env
-   
-   # Update with your Supabase credentials
-   # Then run the migration script
-   node migrate-to-supabase.js
-   ```
+3. **Enable GitHub Pages**:
+   - Go to repository Settings > Pages
+   - Select "GitHub Actions" as source
+   - The workflow will auto-deploy on push to main
 
-### Local Development with Supabase
+### Local Development
 
 ```bash
-# After setting up Supabase and updating .env files
+# Install dependencies
 pnpm install
-node migrate-to-supabase.js
+
+# Set up local SQLite database
+cd apps/server
+cp .env.example .env
+pnpm db:migrate
+pnpm db:seed
+
+# Start development servers
+cd ..
 pnpm dev
 ```
 

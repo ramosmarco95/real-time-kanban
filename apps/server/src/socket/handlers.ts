@@ -1,51 +1,112 @@
 import type { Server, Socket } from 'socket.io';
 import type { SocketEvents } from '@real-time-kanban/shared';
 import { prisma } from '../lib/prisma';
+import jwt from 'jsonwebtoken';
 
 interface ExtendedSocket extends Socket {
   userId?: string;
   boardId?: string;
+  userData?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
 }
 
-const userPresence = new Map<string, { userId: string; boardId?: string; socket: ExtendedSocket }>();
+// Map to track users per board: boardId -> Set of socket IDs
+const boardUsers = new Map<string, Set<string>>();
+// Map to track socket user data: socketId -> user info
+const socketUsers = new Map<string, { userId: string; userData: any; boardId?: string | undefined }>();
 const cardLocks = new Map<string, { userId: string; socketId: string }>();
 
 export function setupSocketHandlers(io: Server<SocketEvents, SocketEvents>) {
+  // Middleware to authenticate socket connections
+  io.use(async (socket: ExtendedSocket, next) => {
+    try {
+      const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+      
+      if (!token) {
+        return next(new Error('Authentication error: No token provided'));
+      }
+
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        return next(new Error('JWT_SECRET not configured'));
+      }
+
+      const decoded = jwt.verify(token, jwtSecret) as { userId: string };
+      
+      // Get user from database
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, email: true, name: true, avatar: true }
+      });
+
+      if (!user) {
+        return next(new Error('Authentication error: User not found'));
+      }
+
+      socket.userId = user.id;
+      socket.userData = user;
+      next();
+    } catch (error) {
+      next(new Error('Authentication error: Invalid token'));
+    }
+  });
+
   io.on('connection', (socket: ExtendedSocket) => {
-    console.log('🔌 Client connected:', socket.id);
+    console.log('🔌 Client connected:', socket.id, 'User:', socket.userData?.name);
 
     // Join board
     socket.on('board:join', async (boardId: string) => {
       try {
+        if (!socket.userId || !socket.userData) {
+          socket.emit('error', { message: 'Authentication required' });
+          return;
+        }
+
         socket.boardId = boardId;
         await socket.join(boardId);
         
-        // Add to presence
-        if (socket.userId) {
-          userPresence.set(socket.id, { userId: socket.userId, boardId, socket });
-          
-          // Notify others
-          socket.to(boardId).emit('user:joined', {
-            userId: socket.userId,
-            user: { id: socket.userId, name: 'User', email: '', avatar: '' }, // TODO: get real user data
-            lastSeen: new Date(),
-            isOnline: true,
-            currentBoard: boardId,
-          });
+        // Track user in this board
+        if (!boardUsers.has(boardId)) {
+          boardUsers.set(boardId, new Set());
         }
+        boardUsers.get(boardId)!.add(socket.id);
+        
+        // Store socket user data
+        socketUsers.set(socket.id, {
+          userId: socket.userId,
+          userData: socket.userData,
+          boardId
+        });
+        
+        // Notify others that user joined
+        socket.to(boardId).emit('user:joined', {
+          userId: socket.userId,
+          user: socket.userData,
+          lastSeen: new Date(),
+          isOnline: true,
+          currentBoard: boardId,
+        });
 
-        // Send current online users
-        const onlineUsers = Array.from(userPresence.values())
-          .filter(p => p.boardId === boardId)
-          .map(p => ({
-            userId: p.userId,
-            user: { id: p.userId, name: 'User', email: '', avatar: '' },
+        // Send current online users for this board
+        const boardUserSockets = boardUsers.get(boardId) || new Set();
+        const onlineUsers = Array.from(boardUserSockets)
+          .map(socketId => socketUsers.get(socketId))
+          .filter(userData => userData && userData.boardId === boardId)
+          .map(userData => ({
+            userId: userData!.userId,
+            user: userData!.userData,
             lastSeen: new Date(),
             isOnline: true,
             currentBoard: boardId,
           }));
 
         socket.emit('users:online', onlineUsers);
+        
+        console.log(`👤 User ${socket.userData.name} joined board ${boardId}. Online users: ${onlineUsers.length}`);
       } catch (error) {
         console.error('Error joining board:', error);
         socket.emit('error', { message: 'Failed to join board' });
@@ -57,14 +118,29 @@ export function setupSocketHandlers(io: Server<SocketEvents, SocketEvents>) {
       await socket.leave(boardId);
       
       if (socket.userId) {
-        userPresence.delete(socket.id);
+        // Remove user from board tracking
+        const boardUserSockets = boardUsers.get(boardId);
+        if (boardUserSockets) {
+          boardUserSockets.delete(socket.id);
+          if (boardUserSockets.size === 0) {
+            boardUsers.delete(boardId);
+          }
+        }
+        
+        // Update socket user data
+        const socketUserData = socketUsers.get(socket.id);
+        if (socketUserData) {
+          socketUserData.boardId = undefined;
+        }
+        
         socket.to(boardId).emit('user:left', socket.userId);
+        console.log(`👤 User ${socket.userData?.name} left board ${boardId}`);
       }
     });
 
     // Card locking
     socket.on('card:lock', (cardId: string) => {
-      if (!socket.userId || !socket.boardId) return;
+      if (!socket.userId || !socket.boardId || !socket.userData) return;
 
       const existingLock = cardLocks.get(cardId);
       if (existingLock && existingLock.socketId !== socket.id) {
@@ -77,7 +153,7 @@ export function setupSocketHandlers(io: Server<SocketEvents, SocketEvents>) {
       socket.to(socket.boardId).emit('card:locked', {
         cardId,
         userId: socket.userId,
-        user: { id: socket.userId, name: 'User', email: '', avatar: '' },
+        user: socket.userData,
       });
     });
 
@@ -174,16 +250,25 @@ export function setupSocketHandlers(io: Server<SocketEvents, SocketEvents>) {
 
     // Handle disconnect
     socket.on('disconnect', () => {
-      console.log('🔌 Client disconnected:', socket.id);
+      console.log('🔌 Client disconnected:', socket.id, 'User:', socket.userData?.name);
       
-      // Remove from presence
-      const presence = userPresence.get(socket.id);
-      if (presence) {
-        userPresence.delete(socket.id);
-        if (presence.boardId && presence.userId) {
-          socket.to(presence.boardId).emit('user:left', presence.userId);
+      // Remove from user tracking
+      const socketUserData = socketUsers.get(socket.id);
+      if (socketUserData && socketUserData.boardId) {
+        const boardUserSockets = boardUsers.get(socketUserData.boardId);
+        if (boardUserSockets) {
+          boardUserSockets.delete(socket.id);
+          if (boardUserSockets.size === 0) {
+            boardUsers.delete(socketUserData.boardId);
+          }
         }
+        
+        // Notify others in the board
+        socket.to(socketUserData.boardId).emit('user:left', socketUserData.userId);
       }
+      
+      // Clean up socket user data
+      socketUsers.delete(socket.id);
 
       // Remove any card locks
       for (const [cardId, lock] of cardLocks.entries()) {

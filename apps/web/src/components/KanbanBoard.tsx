@@ -188,19 +188,24 @@ export function KanbanBoard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
       
-      <div className="p-6">
-        <BoardHeader board={currentBoard!} />
+      {/* Main board area - takes full width minus sidebar space */}
+      <div className="flex-1 flex flex-col">
+        <div className="px-6 py-4">
+          <BoardHeader board={currentBoard!} />
+        </div>
         
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="flex gap-6 overflow-x-auto pb-6 min-h-0">
-            <SortableContext items={columns.map(c => c.id)} strategy={horizontalListSortingStrategy}>
-              {columns.map((column) => (
-                <KanbanColumn key={column.id} column={column} />
-              ))}
-            </SortableContext>
+          <div className="flex-1 px-6 pb-6">
+            <div className="flex gap-6 overflow-x-auto h-full min-h-0">
+              <SortableContext items={columns.map(c => c.id)} strategy={horizontalListSortingStrategy}>
+                {columns.map((column) => (
+                  <KanbanColumn key={column.id} column={column} />
+                ))}
+              </SortableContext>
+            </div>
           </div>
           
           <DragOverlay>

@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import type { SocketEvents } from '@real-time-kanban/shared';
 import { useKanbanStore } from '../store/kanban';
+import { authService } from '../lib/auth';
 
 class SocketService {
   private socket: Socket<SocketEvents, SocketEvents> | null = null;
@@ -15,11 +16,17 @@ class SocketService {
 
     console.log('🔌 Connecting to socket server...');
     
+    // Get auth token for socket authentication
+    const token = authService.getToken();
+    
     this.socket = io(url, {
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
       reconnectionDelay: this.reconnectDelay,
       transports: ['websocket', 'polling'],
+      auth: {
+        token: token
+      }
     });
 
     this.setupEventListeners();
@@ -31,6 +38,11 @@ class SocketService {
       this.socket.disconnect();
       this.socket = null;
     }
+  }
+
+  reconnectWithAuth() {
+    this.disconnect();
+    this.connect();
   }
 
   private setupEventListeners() {
@@ -59,6 +71,14 @@ class SocketService {
     this.socket.on('connect_error', (error) => {
       console.error('🔌 Connection error:', error);
       this.reconnectAttempts++;
+      
+      // Check if it's an authentication error
+      if (error.message?.includes('Authentication error')) {
+        store.setError('Authentication failed. Please log in again.');
+        // Don't retry on auth errors
+        this.disconnect();
+        return;
+      }
       
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         store.setError('Failed to connect to server. Please check your connection.');

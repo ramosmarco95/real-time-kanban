@@ -1,33 +1,46 @@
 import { useEffect, useState } from 'react';
-import { supabase } from './lib/supabase';
+import { authService } from './lib/auth';
 import { Auth } from './components/Auth';
 import { KanbanBoard } from './components/KanbanBoard';
-import type { User } from '@supabase/supabase-js';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const checkAuth = async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, []);
 
+  const handleAuthSuccess = async () => {
+    try {
+      const currentUser = await authService.getCurrentUser();
+      setUser(currentUser);
+    } catch (error) {
+      console.error('Failed to get user after auth:', error);
+    }
+  };
+
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await authService.logout();
+    setUser(null);
   };
 
   if (loading) {
@@ -39,7 +52,7 @@ function App() {
   }
 
   if (!user) {
-    return <Auth onAuthSuccess={() => {}} />;
+    return <Auth onAuthSuccess={handleAuthSuccess} />;
   }
 
   return (
@@ -52,7 +65,7 @@ function App() {
             </h1>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
-                Welcome, {user.user_metadata?.name || user.email}
+                Welcome, {user.name || user.email}
               </span>
               <button
                 onClick={handleSignOut}

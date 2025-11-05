@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { authService } from '../lib/auth';
 
 interface AuthProps {
   onAuthSuccess: () => void;
@@ -21,30 +21,17 @@ export function Auth({ onAuthSuccess }: AuthProps) {
     try {
       if (isSignUp) {
         // Sign up
-        const { data, error } = await supabase.auth.signUp({
+        await authService.register({
+          name: name || email.split('@')[0] || 'User',
           email,
           password,
-          options: {
-            data: {
-              name: name || email.split('@')[0],
-            },
-          },
         });
-
-        if (error) throw error;
-
-        if (data.user && !data.session) {
-          setError('Please check your email for a confirmation link.');
-          return;
-        }
       } else {
         // Sign in
-        const { error } = await supabase.auth.signInWithPassword({
+        await authService.login({
           email,
           password,
         });
-
-        if (error) throw error;
       }
 
       onAuthSuccess();
@@ -55,20 +42,9 @@ export function Auth({ onAuthSuccess }: AuthProps) {
     }
   };
 
+  // Note: Google OAuth removed - using email/password only
   const handleGoogleAuth = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}`,
-        },
-      });
-      if (error) throw error;
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
-      setLoading(false);
-    }
+    setError('Google OAuth is not available in this version. Please use email and password.');
   };
 
   return (

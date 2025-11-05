@@ -34,6 +34,14 @@ export function BoardHeader({ board }: BoardHeaderProps) {
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Users size={16} />
             <span>{onlineUsers.length} online</span>
+            {onlineUsers.length > 0 && (
+              <div className="hidden sm:flex items-center gap-1 ml-2">
+                <span className="text-xs text-gray-500">•</span>
+                <span className="text-xs text-gray-500 max-w-40 truncate">
+                  {onlineUsers.map(user => user.user.name).join(', ')}
+                </span>
+              </div>
+            )}
           </div>
           
           {/* Connection status */}

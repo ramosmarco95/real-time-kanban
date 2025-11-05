@@ -1,6 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import type { CreateBoardRequest, UpdateBoardRequest, ApiResponse, Board } from '@real-time-kanban/shared';
 import { ValidationError, NotFoundError } from '@real-time-kanban/shared';
 
@@ -18,7 +19,7 @@ const updateBoardSchema = z.object({
 });
 
 // GET /api/boards - Get all boards
-router.get('/', async (req, res, next) => {
+router.get('/', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
   try {
     const boards = await prisma.board.findMany({
       include: {
@@ -50,7 +51,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /api/boards/:id - Get board by ID
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
   try {
     const { id } = req.params;
 
@@ -89,7 +90,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // POST /api/boards - Create new board
-router.post('/', async (req, res, next) => {
+router.post('/', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
   try {
     const validatedData = createBoardSchema.parse(req.body);
 
@@ -128,7 +129,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // PUT /api/boards/:id - Update board
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
   try {
     const { id } = req.params;
     const validatedData = updateBoardSchema.parse(req.body);
@@ -169,7 +170,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // DELETE /api/boards/:id - Delete board
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
   try {
     const { id } = req.params;
 

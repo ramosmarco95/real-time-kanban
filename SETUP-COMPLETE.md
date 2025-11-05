@@ -1,91 +1,114 @@
-# Real-Time Kanban - Supabase Integration Setup
+# Real-Time Kanban - GitHub Pages Setup Complete
 
-✅ **Setup Complete!** Your Kanban app is now configured to work with Supabase.
+✅ **Migration Complete!** Your Kanban app is now configured for GitHub Pages deployment with separate backend hosting.
 
 ## What's Working Now
 
 ### 🔧 **Local Development**
 - Frontend: `http://localhost:5173`
-- Backend: Netlify Functions (ready for deployment)
-- Database: Supabase PostgreSQL
-- Authentication: Supabase Auth with Google OAuth
+- Backend: Express server on `http://localhost:3001`
+- Database: SQLite (local file) or PostgreSQL (production)
+- Authentication: Custom JWT with bcrypt password hashing
 
-### 🚀 **Deployment Ready**
-- Netlify Functions connected to Supabase
-- Environment variables configured
-- Authentication UI implemented
+### 🚀 **Deployment Configuration**
+- Frontend: Ready for GitHub Pages deployment
+- Backend: Compatible with Railway, Render, Heroku
+- Database: SQLite (local) / PostgreSQL (production)
+- GitHub Actions: Automated deployment workflow configured
 
 ## Environment Variables Set
 
 ### Frontend (.env)
 ```
-VITE_SUPABASE_URL=https://ixveqjauovylfgunuywt.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 VITE_API_BASE_URL=http://localhost:3001/api
 ```
 
 ### Server (.env)
 ```
-DATABASE_URL=postgresql://postgres:%3F8H-qV-A2pkcE%25R@db.ixveqjauovylfgunuywt.supabase.co:5432/postgres
-SUPABASE_URL=https://ixveqjauovylfgunuywt.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+DATABASE_URL="file:./dev.db"
+JWT_SECRET="real-time-kanban-jwt-secret-2024-secure-key"
+NODE_ENV=development
+PORT=3001
+CORS_ORIGIN="http://localhost:5173,http://localhost:5174"
 ```
 
-## Database Schema Created
+## Database Schema
 
-✅ Tables created:
-- `users` - User profiles
+✅ Tables configured:
+- `users` - User profiles with password authentication
 - `boards` - Kanban boards
 - `columns` - Board columns (To Do, In Progress, Done)
 - `cards` - Task cards with drag & drop support
 
-✅ Sample data inserted for testing
+✅ Local SQLite database created and migrated
 
-## Next Steps for Netlify Deployment
+## Authentication Features
 
-1. **Add Environment Variables to Netlify:**
-   - Go to your Netlify site settings
-   - Add the VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY
+- ✅ User registration with email/password
+- ✅ User login with JWT tokens
+- ✅ Secure password hashing with bcrypt
+- ✅ Token-based API authentication
+- ✅ Automatic token refresh handling
+- ❌ Google OAuth (removed - email/password only)
 
-2. **Run Database Schema:**
-   - Copy content from `supabase-schema.sql`
-   - Run in your Supabase SQL Editor
+## API Features Available
 
-3. **Deploy:**
-   ```bash
-   pnpm run deploy
-   ```
-
-4. **Configure Supabase Auth (Optional):**
-   - Go to Supabase > Authentication > Settings
-   - Add your Netlify domain to allowed origins
-   - Enable Google OAuth if desired
-
-## Features Available
-
-- ✅ User authentication (email/password + Google OAuth)
 - ✅ Create, edit, delete boards
-- ✅ Create, edit, delete columns
+- ✅ Create, edit, delete columns  
 - ✅ Create, edit, delete, move cards
 - ✅ Drag & drop functionality
-- ✅ Real-time updates via Supabase
+- ✅ Real-time updates via WebSocket
 - ✅ Responsive design
+- ✅ JWT-protected API endpoints
 
-## Commands
+## Development Commands
 
 ```bash
-# Development
+# Start development (both frontend and backend)
 pnpm dev
 
-# Build
-pnpm run build
+# Start backend only
+cd apps/server && npm run dev
 
-# Deploy to Netlify
-pnpm run deploy
+# Start frontend only  
+cd apps/web && npm run dev
 
-# Preview deployment
-pnpm run preview
+# Database operations
+cd apps/server
+npx prisma migrate dev    # Run migrations
+npx prisma studio         # Open database browser
+npx prisma db push        # Push schema changes
 ```
 
-Your Real-Time Kanban board is ready to go! 🎉
+## Production Deployment Steps
+
+### 🌐 **GitHub Pages Deployment**
+
+1. **Deploy Backend First**:
+   ```bash
+   # Choose your backend hosting service:
+   # - Railway: railway.app
+   # - Render: render.com  
+   # - Heroku: heroku.com
+   ```
+
+2. **Configure Environment Variables**:
+   - Set up PostgreSQL database (Supabase recommended)
+   - Configure CORS to allow your GitHub Pages URL
+   - Set JWT_SECRET and other production variables
+
+3. **Enable GitHub Pages**:
+   - Go to repository Settings > Pages
+   - Source: "GitHub Actions"
+   - Push to main branch triggers auto-deployment
+
+4. **Set GitHub Secrets**:
+   - Add `VITE_API_BASE_URL` secret with your backend URL
+   - Workflow will automatically deploy frontend
+
+### 🔗 **URLs After Deployment**
+- Frontend: `https://yourusername.github.io/real-time-kanban/`
+- Backend: `https://your-app.railway.app/` (or your chosen host)
+- Database: `postgresql://...` (Supabase or similar)
+
+Your Real-Time Kanban board is ready for local development! 🎉

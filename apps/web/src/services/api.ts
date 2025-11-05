@@ -11,6 +11,7 @@ import type {
   UpdateCardRequest,
   MoveCardRequest 
 } from '@real-time-kanban/shared';
+import { authService } from '../lib/auth';
 
 // Auto-detect API base URL based on environment
 const getApiBaseUrl = () => {
@@ -37,9 +38,12 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     const url = `${API_BASE_URL}${endpoint}`;
     
+    const token = authService.getToken();
+    
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,

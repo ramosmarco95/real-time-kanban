@@ -11,14 +11,21 @@ import { prisma } from './lib/prisma';
 import { boardRoutes } from './routes/boards';
 import { columnRoutes } from './routes/columns';
 import { cardRoutes } from './routes/cards';
+import authRoutes from './routes/auth';
 import { setupSocketHandlers } from './socket/handlers';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 const server = createServer(app);
+
+// Parse CORS origins from environment variable
+const corsOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:5173'];
+
 const io = new Server<SocketEvents, SocketEvents>(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: corsOrigins,
     methods: ['GET', 'POST'],
   },
 });
@@ -28,7 +35,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: corsOrigins,
   credentials: true,
 }));
 app.use(morgan('combined'));
@@ -40,6 +47,7 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/columns', columnRoutes);
 app.use('/api/cards', cardRoutes);
