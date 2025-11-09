@@ -2,6 +2,14 @@
 
 A modern, real-time collaborative Kanban board built with React, TypeScript, Node.js, and WebSockets.
 
+---
+
+## 🎥 Demo Video
+
+▶️ [Watch the 5-Minute YouTube Explanation](#)  
+
+---
+
 ## 🚀 Features
 
 - **Real-time collaboration** - See changes from other users instantly
@@ -44,7 +52,7 @@ real-time-kanban/
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone [<repository-url>](https://github.com/ramosmarco95/real-time-kanban.git)
    cd real-time-kanban
    ```
 
@@ -56,7 +64,7 @@ real-time-kanban/
 3. Set up the database:
    ```bash
    cd apps/server
-   cp .env.example .env
+   cp .env.local .env
    pnpm db:migrate
    pnpm db:seed
    ```
@@ -246,9 +254,7 @@ docker-compose up --build
 5. Push to the branch: `git push origin feature/amazing-feature`
 6. Open a Pull Request
 
-## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 

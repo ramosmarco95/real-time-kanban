@@ -49,7 +49,21 @@ export function Auth({ onAuthSuccess }: AuthProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      
       <div className="max-w-md w-full space-y-8">
+        <header className=" text-black p-4 text-center">
+        ️⚠️ This is a demo application. For production use, please download the
+        code and run it locally. ⚠️<br/>
+        <a href="https://ramosmarco95.github.io/javascript-projects/" style={{color: "blue", textDecoration: "underline"}}>Home</a>
+        <section id="demo-video" aria-labelledby="demo-video-heading">
+        <h2 id="demo-video-heading">App demo</h2>
+        <p>
+          Watch the walkthrough for the Real Time Kanban.
+          <a href="https://youtu.be/FP-YGOa21t8" target="_blank" style={{color: "blue", textDecoration: "underline"}}>Open on YouTube</a>
+        </p>
+        <p>Learn More: <a href="https://github.com/ramosmarco95/real-time-kanban" target="_blank" style={{color: "blue", textDecoration: "underline"}}>GitHub</a></p>
+      </section>
+      </header>
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             {isSignUp ? 'Create your account' : 'Sign in to your account'}
