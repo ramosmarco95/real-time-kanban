@@ -6,7 +6,7 @@ A modern, real-time collaborative Kanban board built with React, TypeScript, Nod
 
 ## 🎥 Demo Video
 
-▶️ [Watch the 5-Minute YouTube Explanation](#)  
+▶️ [Watch the 5-Minute YouTube Walkthrough](https://youtu.be/FP-YGOa21t8)  
 
 ---
 
